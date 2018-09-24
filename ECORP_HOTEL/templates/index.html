@@ -1,0 +1,49 @@
+{% extends "skeleton.html" %}
+{% block content %}
+
+<div class="container">
+	
+	<div class="row">
+		<div class="card col-sm" style="margin: 5px; padding-top: 10px; height: 220px; display: table-cell; vertical-align: middle;">
+			<h4>Read Card</h4>
+			<div id="notfound"> <p>Card not found!!</p> </div>
+			<div id="found" style="line-height: 6px;">
+			</div>
+		</div>
+		<a href="/write" id="writeCard" class="btn btn-primary btn-block col-sm" style="margin: 5px; height: 220px; display: table-cell; vertical-align: middle;"><div  style="margin: 80px;">Write Card</div></a>
+		<a href="/logs" class="btn btn-primary btn-block col-sm" style="margin: 5px; height: 220px; display: table-cell; vertical-align: middle;"><div  style="margin: 80px;">Logs</div></a>
+	</div>
+
+</div>
+
+</div>
+
+<script type="text/javascript">
+$( document ).ready(function() {
+	var socket = io();
+
+	socket.on('rfid', function(data){
+
+		$("#notfound").hide()
+		$("#found").html(`
+			<p> <span style="font-weight:bold">Type: </span></b>`+data.type+`</p>
+			<p> <span style="font-weight:bold">Id: </span></b>`+data.id+`</p>
+			<p> <span style="font-weight:bold">Building: </span></b>`+data.building+`</p>
+			<p> <span style="font-weight:bold">Floor: </span></b>`+data.floor+`</p>
+			<p> <span style="font-weight:bold">Hab Num: </span></b>`+data.numhab+`</p>
+			<p> <span style="font-weight:bold">Card Num: </span></b>`+data.cardnum+`</p>
+			<p> <span style="font-weight:bold">Checkin date: </span></b>`+data.checkindate+`</p>
+			<p> <span style="font-weight:bold">Checkin date: </span></b>`+data.checkoutdate+`</p>
+		`)
+		$("#found").show()
+	});
+
+	socket.on('rfid.off', function(data){
+		$("#found").hide()
+		$("#notfound").show()
+	});
+
+});
+</script>
+
+{% endblock %}

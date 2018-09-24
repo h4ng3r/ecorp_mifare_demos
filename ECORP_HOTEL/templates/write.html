@@ -1,0 +1,45 @@
+{% extends "skeleton.html" %}
+{% block content %}
+
+  <form id="writeCard" class="form-signin" method="POST">
+
+    <h1 class="h3 mb-3 font-weight-normal">Generate new card</h1>
+
+    <label for="inputRoomNumber" class="sr-only">Room Number</label>
+    <input type="input" id="inputRoomNumber" class="form-control" name="RoomNumber" placeholder="RoomNumber" required autofocus>
+
+    <label for="inputBuilding" class="sr-only">Building</label>
+    <input type="Building" id="inputBuilding" class="form-control" name="Building" placeholder="Building" required>
+
+    <label for="inputFloor" class="sr-only">Floor</label>
+	<input type="Floor" id="inputFloor" class="form-control" name="Floor" placeholder="Floor" required>
+
+	<label for="inputCheckoutdate" class="sr-only">Checkoutdate</label>
+	<input type="Checkoutdate" id="inputCheckoutdate" class="form-control" name="Checkoutdate" placeholder="Checkoutdate (dd/mm/yyyy)" required>
+
+    <button class="btn btn-primary btn-block" type="submit">Write Card</button>
+
+  </form>
+
+  <script type="text/javascript">
+  
+  $( document ).ready(function() {
+    
+    $("#writeCard").submit(function(e){
+      e.preventDefault()
+      var t = $(this).serializeArray().reduce(function(m,o){ m[o.name] = o.value; return m;}, {})
+      $.post("/generateCard", t, function(data){
+        //var response = jQuery.parseJSON(data);
+        if(data.res) {
+          $.notify("Card has been correctly written", { position:"top right", className:"success" });
+        } else {
+          $.notify("Error writting the card", { position:"top right", className:"error" });
+        }
+
+      });
+    });
+
+  });
+  </script>
+
+{% endblock %}

@@ -1,0 +1,114 @@
+<title>RFID</title>
+	<meta charset="utf-8">
+	<link href='http://fonts.googleapis.com/css?family=Open+Sans:400,300,600,700' rel='stylesheet' type='text/css'>
+	<link href='https://cdn.luigifreitas.me/animate.css' rel='stylesheet' type='text/css'>
+	<script type="text/javascript" src="http://code.jquery.com/jquery-2.0.3.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-color/2.1.2/jquery.color.min.js"></script>
+	<script src="/socket.io/socket.io.js"></script>
+
+	<style>
+		body {
+			left: 0%;
+			top: 0%;
+			width: 100%;
+			height: 100%;
+			overflow:hidden;
+			position: absolute;
+			background-color: #ededed;
+		}
+
+		.box {
+			position: absolute;
+			width: 25%;
+			left: 37.5%;
+			top: 20%;
+			background-color: black;
+
+			padding-left: 0%;
+			border-radius: 8px;
+			background-color: white;
+			border: 1px solid #b6b6b6;
+
+			box-shadow: 0px 1px 0px .5px #b6b6b6;
+		}
+
+		.box:after {
+			padding-top: 80%;
+			display: block;
+			content: '';
+		}
+
+		.help {
+			width: 100%;
+			height: 50%;
+			color: #606060;
+			font-family: "Open Sans";
+			font-weight: 300;
+			font-size: 25px;
+			position: absolute;
+			bottom: -27%;
+			text-align: center;
+			-webkit-transitio: all 0.5s ease;
+			-moz-transition: all 0.5s ease;
+			-o-transition: all 0.5s ease;
+			transition: all 0.5s ease;
+		}
+
+		.icon {
+			width: 100%;
+			height: 76%;
+			background-position: 50% 50%;
+			background-repeat: no-repeat;
+			background-size: 50%;
+			position: absolute;
+			background-image: url("/static/rfid.png");
+			-webkit-transitio: all 0.5s ease;
+			-moz-transition: all 0.5s ease;
+			-o-transition: all 0.5s ease;
+			transition: all 0.5s ease;
+		}
+
+	</style>
+
+
+	<body>
+		<div class="box">
+			<div class="icon"></div>
+			<div class="help">
+				Scan your NFC Card.
+			</div>
+		</div>
+	</body>
+
+	<script>
+	// Connects with Server
+
+	function onCardRead(is_valid) {
+		var color = "";
+		if(is_valid) { 
+			$(".help").text("You may come in.");
+			color = "#2ECC40"; // 01FF70
+		} else {
+			$(".help").text("You should not pass!");
+			color = "#FF4136";
+		}
+
+		$( "body" )
+			.stop()
+			.css("background-color", '#EDEDED')
+			.animate({
+				'background-color': color,
+			}, "fast", function() {
+				$( "body" ).animate({"background-color": '#EDEDED'}, 4000, function(){
+					$(".help").text("Scan your NFC Card."); 
+				});
+			});
+	}
+
+	var socket = io();
+
+	socket.on('reader', function(data){
+		onCardRead(data['is_valid']);
+	});
+
+	</script>

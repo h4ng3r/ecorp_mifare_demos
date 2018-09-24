@@ -1,0 +1,14 @@
+{% extends "skeleton.html" %}
+{% block content %}
+
+<h1 class="h3 mb-3 font-weight-normal">Logs</h1>
+
+  {% for item in logs %}
+	<div class="row">
+    	<div class="col-sm"> Room {{item.room_number}} </div>
+    	<div class="col-sm"> Building {{item.building}} </div>
+    	<div class="col-sm"> Floor {{item.floor}} </div>
+	</div>
+  {% endfor %}
+
+{% endblock %}
