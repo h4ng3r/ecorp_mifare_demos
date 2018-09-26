@@ -2,53 +2,35 @@
 {% block content %}
 
 <style type="text/css">
+
+  * {
+   margin: 0;
+   padding: 0;
+  }
+
+  .imgbox {
+   display: grid;
+   height: 100%;
+  }
+
+  .center-fit {
+   max-width: 100%;
+   max-height: 100vh;
+   margin: auto;
+  }
+
+  #balance {
+    font-size: 25px
+  }
+
 .fit {
 	height:700px;
     width:100%;
     overflow: hidden;
     background:url(/static/images/vending-machine.jpg) no-repeat center center
 }
-/*.fit img {
-  max-width: 99%;
-  max-height: 99%;
-}*/	
+
 </style>
-
-<html>
- <head>
-  <style>
-  * {
-   margin: 0;
-   padding: 0;
-  }
-  .imgbox {
-   display: grid;
-   height: 100%;
-  }
-  .center-fit {
-   max-width: 100%;
-   max-height: 100vh;
-   margin: auto;
-  }
-  #balance {
-    font-size: 25px
-  }
-  </style>
- </head>
- <body>
- <!--
-  <div class="imgbox">
-   <img class="center-fit" src='/static/images/vending-machine.jpg'>
-   <div>
-    AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-   </div>
-  </div>
-  <div style="position: absolute; top: 25%; left: 50%; background: #6c757d; width: 150px; height: 60px; border: 2px; border-color: black">
-  	<div id="found" style="font-size: 50px; color:black">  </div>
-  </div>
- </body>
--->
-
 
  <div class="row">
   <div class="col-sm-2"> </div>
@@ -82,8 +64,6 @@
 </div> 
 
 
-
-</html>
 
 <script type="text/javascript">
 $( document ).ready(function() {
