@@ -36,9 +36,13 @@ async function writeCard() {
         await wrapper.writeBlock(4, "B", B_KEY, encoded_card.substring(0, 32))
         await wrapper.writeBlock(5, "B", B_KEY, encoded_card.substring(32, 64))
     } catch (e) {
-        console.log(e)
-        await wrapper.writeBlock(4, "B", "FFFFFFFFFFFF", encoded_card.substring(0, 32))
-        await wrapper.writeBlock(5, "B", "FFFFFFFFFFFF", encoded_card.substring(32, 64))
+        try {
+            await wrapper.writeBlock(7, "B", "FFFFFFFFFFFF", "8756df5612abFF07806998a425bd468b")
+            await wrapper.writeBlock(4, "B", B_KEY, encoded_card.substring(0, 32))
+            await wrapper.writeBlock(5, "B", B_KEY, encoded_card.substring(32, 64))
+        } catch (e) {
+            return 0
+        }
     }
 
     return 1
