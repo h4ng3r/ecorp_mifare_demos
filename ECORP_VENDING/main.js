@@ -31,11 +31,14 @@ function xorCrypt (str, key) {
 async function readCard(uid) {
     var xorkey = (uid + uid + uid + uid + uid + uid + uid).substring(0, 32)
     const half1 = await wrapper.readBlock(8, "A", A_KEY)
-    var s = ""
-    for (var i = 0; i < half1.length; i++) {
-        s += half1[i].toString(16).padStart(2, '0')
+    if (half1) {
+        var s = ""
+        for (var i = 0; i < half1.length; i++) {
+            s += half1[i].toString(16).padStart(2, '0')
+        }
+        return (parseFloat(xorCrypt(s, xorkey).substring(0,8))/100).toFixed(2)
     }
-    return (parseFloat(xorCrypt(s, xorkey).substring(0,8))/100).toFixed(2)
+    return ""
 }
 
 
@@ -44,7 +47,7 @@ async function writeCard(uid, coins) {
     var s = coins.toString(10).padStart(8, '0').padEnd(32, '0')
     var xorkey = (uid + uid + uid + uid + uid + uid + uid).substring(0, 32)
     var data = xorCrypt(s,xorkey)
-    var resp = await wrapper.writeBlock(8, "B", B_KEY, data)
+    var resp = await wrapper.writeBlock(8, "B", A_KEY, data)
     return resp
 }
 
@@ -73,6 +76,9 @@ app.post('/buy', (req, res) => {
                 var price = p
                 var coins = parseFloat(coins) * 100
                 if (coins >= price) {
+                    price = parseInt(price)
+                    coins = parseInt(coins)
+                    console.log(coins, price, coins-price)
                     writeCard(current_uid, coins-price).then(function(r){
                         if(r) {
                             current_card = ((coins-price)/100).toFixed(2)
@@ -105,10 +111,15 @@ app.post('/reset', (req, res) => {
 let current_card = null
 let current_uid = null
 
-wrapper.on("card", async uid => {
+wrapper.on("card", uid => {
     current_uid = uid
-    current_card = await readCard(uid)
-    io.sockets.emit("rfid", current_card)
+    console.log("card", uid)
+    readCard(uid)
+        .then(function(d){
+            current_card = d
+            io.sockets.emit("rfid", current_card)    
+        })
+        .catch(function(e) { console.log("READ ERROR", e); })
 });
 
 wrapper.on("card.off", () => {
@@ -124,6 +135,43 @@ io.on('connection', function(socket){
 server.listen(8080);
 console.log("server up")
 
+
 wrapper.waitCard()
     .then(function(){})
     .catch(function(){})
+
+/*
+mfrc522 = require("mfrc522-rpi");
+mfrc522.initWiringPi(0);
+
+setInterval(function(){
+    mfrc522.reset()
+    
+    let response = mfrc522.findCard();
+    if (!response.status) {
+        return 
+    }
+
+    response = mfrc522.getUid();
+    if (!response.status) { return  }
+
+    let uid = response.data;
+
+    mfrc522.selectCard(uid)
+
+    var resp = mfrc522.authenticate(8, [20, 247, 216, 62, 103, 18], uid)
+
+    console.log(resp)
+
+    var resp2 = mfrc522.authenticateB(8, [154, 178, 86, 222, 120, 255], uid)
+
+    console.log(resp2)
+
+    const r = mfrc522.writeDataToBlock(8, [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
+
+    console.log(r)
+
+    console.log("=======================================================")
+
+}, 200)
+*/
