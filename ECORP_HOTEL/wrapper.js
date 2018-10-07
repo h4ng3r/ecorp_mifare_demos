@@ -16,17 +16,45 @@ class Wrapper extends EventEmitter {
         this.type = type
         if(this.type == "USB") {
             const { NFC } = require('nfc-pcsc');
-            this.nfc = new NFC();
+            this.nfc = new NFC();   
         } else {
             this.mfrc522 = require("mfrc522-rpi");
             this.mfrc522.initWiringPi(0);
         }
+
     }
 
     sleep(ms){
         return new Promise(resolve=>{
             setTimeout(resolve,ms)
         })
+      }
+
+    ticker(self) {
+
+        self.mfrc522.reset()
+            
+        let response = self.mfrc522.findCard();
+        if (!response.status) {
+            if (self.last_card_uid) {
+                self.emit("card.off")
+                self.last_card_uid = null
+            }
+            return 
+        }
+
+        response = self.mfrc522.getUid();
+        if (!response.status) { return  }
+
+        let uid = response.data;
+        uid = uid[0].toString(16) + uid[1].toString(16) + uid[2].toString(16) + uid[3].toString(16)
+        
+        if (self.last_card_uid != uid) {
+            self.last_card_uid = uid
+            this.last_card_uid_raw = response.data
+            self.emit("card", uid.toUpperCase())
+        }
+
     }
 
     async waitCard() {
@@ -46,31 +74,9 @@ class Wrapper extends EventEmitter {
             })
         } else {
 
-            let last_card_uid = ""
+            this.last_card_uid = ""
             var self = this
-
-            // I hate this setInterval but fix all the main loop problems
-            // TODO: card.off
-            setInterval(function(){
-                self.mfrc522.reset()
-                
-                let response = self.mfrc522.findCard();
-                if (!response.status) { return  }
-
-                response = self.mfrc522.getUid();
-                if (!response.status) { return  }
-
-                let uid = response.data;
-
-                uid = uid[0].toString(16) + uid[1].toString(16) + uid[2].toString(16) + uid[3].toString(16)
-                
-                if (last_card_uid != uid) {
-                    console.log("EMIT" + uid.toUpperCase())
-                    self.emit("card", uid.toUpperCase())
-                }
-
-                last_card_uid = uid
-            }, 200)
+            this.timer = setInterval(function() { self.ticker(self); }, 200);
         }
     }
 
@@ -82,6 +88,24 @@ class Wrapper extends EventEmitter {
             const data = await this.reader.read(block, 16);
             return Promise.resolve(data)
         } else {
+            
+            clearInterval(this.timer)
+            var self = this
+            this.mfrc522.selectCard(this.last_card_uid_raw)
+            let keya = []
+            for (var i = 0; i < key.length; i+=2) {
+                keya.push(parseInt(key[i]+key[i+1], 16))
+            }
+            var resp = this.mfrc522.authenticate(block, keya, this.last_card_uid_raw)
+            if (resp) {
+                const data = this.mfrc522.getDataForBlock(block)
+                this.timer = setInterval(function() { self.ticker(self); }, 200);
+                return Promise.resolve(data)
+            } else {
+                console.log("Read authenticate rejected!")
+                this.timer = setInterval(function() { self.ticker(self); }, 200);
+                return Promise.reject()
+            }
         }
     }
 
@@ -99,56 +123,46 @@ class Wrapper extends EventEmitter {
             const ok = await this.reader.write(block, buf, 16);
             return Promise.resolve(ok)
         } else {
-        }
-    }
 
-/*
+            let keya = []
+            for (var i = 0; i < key.length; i+=2) {
+                keya.push(parseInt(key[i]+key[i+1], 16))
+            }
+            let dataar = []
+            for (var i = 0; i < data.length; i+=2) {
+                dataar.push(parseInt(data[i]+data[i+1], 16))
+            }
 
-OLD FUNCTION WITH AUTHENTICATION TEST
+            clearInterval(this.timer)
+            var self = this
+            self.wrote = false
+            while(!self.wrote) {
 
-    readCardUID() {
-        if(this.type == "USB") {
-            this.nfc.on('reader', reader => {
-
-                reader.on('card', async card => {
-
-                    // card is object containing following data
-                    // [always] String type: TAG_ISO_14443_3 (standard nfc tags like Mifare) or TAG_ISO_14443_4 (Android HCE and others)
-                    // [always] String standard: same as type
-                    // [only TAG_ISO_14443_3] String uid: tag uid
-                    // [only TAG_ISO_14443_4] Buffer data: raw data from select APDU response
-
-                    console.log(`${reader.reader.name}  card detected`, card);
-
-
-                    const key = 'FFFFFFFFFFFF';
-                    const keyType = 0x60;
-                    console.log(keyType)
-                    
-                    const valid = await reader.authenticate(4, keyType, key)
-                    const data = await reader.read(4, 16);
-                    return Promise.resolve(data)
-
-                });
-            });
-
-        } else {
-
-            this.mfrc522.reset()
+                self.mfrc522.reset()
             
-            let response = this.mfrc522.findCard();
-            while (!response.status) { response = this.mfrc522.findCard();  }
+                let response = self.mfrc522.findCard();
+                if (!response.status) continue
 
-                response = this.mfrc522.getUid();
+                response = self.mfrc522.getUid();
+                if (!response.status) continue
 
-                //# If we have the UID, continue
-                const uid = response.data;
-                return uid[0].toString(16) + uid[1].toString(16) + uid[2].toString(16) + uid[3].toString(16)
+                let uid = response.data;
+                this.mfrc522.selectCard(uid)
+        
+                var resp = this.mfrc522.authenticateB(8, [154, 178, 86, 222, 120, 255], uid)
 
+                if (resp) {
+                    const r = this.mfrc522.writeDataToBlock(block, dataar)
+                    this.timer = setInterval(function() { self.ticker(self); }, 200);
+                    return Promise.resolve(true)
+                } else {
+                    console.log("Write authenticate rejected!")
+                    this.timer = setInterval(function() { self.ticker(self); }, 200);
+                    return Promise.reject()
+                }
+            }
         }
     }
-
-*/
 
 };
 

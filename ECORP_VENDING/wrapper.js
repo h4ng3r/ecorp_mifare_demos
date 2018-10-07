@@ -77,56 +77,6 @@ class Wrapper extends EventEmitter {
 			this.last_card_uid = ""
 			var self = this
 			this.timer = setInterval(function() { self.ticker(self); }, 200);
-			/*
-
-			self.this.write_data_result = 0
-
-			// I hate this setInterval but fix all the main loop problems
-			// TODO: card.off
-			setInterval(function(){
-				self.mfrc522.reset()
-	   			
-	   			let response = self.mfrc522.findCard();
-				if (!response.status) {
-					if (self.last_card_uid) {
-						self.emit("card.off")
-						self.last_card_uid = null
-					}
-					return 
-				}
-
-			    response = self.mfrc522.getUid();
-				if (!response.status) { return  }
-
-			    let uid = response.data;
-				uid = uid[0].toString(16) + uid[1].toString(16) + uid[2].toString(16) + uid[3].toString(16)
-			    
-			    if (self.last_card_uid != uid) {
-			    	self.last_card_uid = uid
-			    	self.last_card_uid_raw = response.data
-			    	self.emit("card", uid.toUpperCase())
-			    	console.log("card")
-			    	self.mfrc522.selectCard(response.data)
-			    	if(self.mfrc522.authenticate(8, [20, 247, 216, 62, 103, 18], response.data)) {
-			    		self.read8 = self.mfrc522.getDataForBlock(8)
-			    	}
-		    	}
-
-		    	if (self.write_data) {
-		    		self.mfrc522.selectCard(response.data)
-		    		var resp = self.mfrc522.authenticateB(8, [154, 178, 86, 222, 120, 255], self.last_card_uid_raw)
-					console.log("AUTHENTICATE B", resp)
-					if (resp) {
-						self.this.write_data_result = 1
-					} else {
-						self.this.write_data_result = -1
-					}
-		    	}
-    			
-
-    		}, 200)
-
-    		*/
 		}
 	}
 
@@ -156,7 +106,6 @@ class Wrapper extends EventEmitter {
 				this.timer = setInterval(function() { self.ticker(self); }, 200);
 				return Promise.reject()
 			}
-			//return Promise.resolve(this.read8)
 		}
 	}
 
@@ -214,54 +163,6 @@ class Wrapper extends EventEmitter {
 			}
 		}
 	}
-
-/*
-
-OLD FUNCTION WITH AUTHENTICATION TEST
-
-	readCardUID() {
-		if(this.type == "USB") {
-			this.nfc.on('reader', reader => {
-
-				reader.on('card', async card => {
-
-					// card is object containing following data
-					// [always] String type: TAG_ISO_14443_3 (standard nfc tags like Mifare) or TAG_ISO_14443_4 (Android HCE and others)
-					// [always] String standard: same as type
-					// [only TAG_ISO_14443_3] String uid: tag uid
-					// [only TAG_ISO_14443_4] Buffer data: raw data from select APDU response
-
-					console.log(`${reader.reader.name}  card detected`, card);
-
-
-					const key = 'FFFFFFFFFFFF';
-					const keyType = 0x60;
-					console.log(keyType)
-				    
-				    const valid = await reader.authenticate(4, keyType, key)
-			       	const data = await reader.read(4, 16);
-	    			return Promise.resolve(data)
-
-				});
-			});
-
-		} else {
-
-		    this.mfrc522.reset()
-   			
-   			let response = this.mfrc522.findCard();
-			while (!response.status) { response = this.mfrc522.findCard();  }
-
-			    response = this.mfrc522.getUid();
-
-			    //# If we have the UID, continue
-			    const uid = response.data;
-			    return uid[0].toString(16) + uid[1].toString(16) + uid[2].toString(16) + uid[3].toString(16)
-
-		}
-	}
-
-*/
 
 };
 

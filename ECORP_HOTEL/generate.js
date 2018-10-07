@@ -33,6 +33,8 @@ async function writeCard() {
     const encoded_card = encodeCard(CARD_TYPE.GUEST, 178, 1, 3, READER_NUMHAB, 1, checkinDate, checkoutDate)
 
     try {
+        //await wrapper.writeBlock(11, "B", "9ab256de78ff", "ffffffffffffff078069ffffffffffff")
+        //await wrapper.writeBlock(8, "B", "FFFFFFFFFFFF", "00000000000000000000000000000000")
         await wrapper.writeBlock(4, "B", B_KEY, encoded_card.substring(0, 32))
         await wrapper.writeBlock(5, "B", B_KEY, encoded_card.substring(32, 64))
     } catch (e) {
