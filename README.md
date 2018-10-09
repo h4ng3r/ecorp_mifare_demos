@@ -1,5 +1,7 @@
 # ECorp Mifare Demos
 
+Slides [MIFARE Hacking: You can't hold the door](https://github.com/h4ng3r/Slides/blob/master/NavajaNegra_2018_MIFARE_Hacking_You_cant_hold_the_door.pdf)
+
 **WORK IN PROGRESS!!!!**
 
 Some mifare based access systems for demos and workshops
@@ -20,13 +22,13 @@ Check your reader section and after instaling the dependencies just run:
 ```npm install```
 
 
-###ACR122U
+### ACR122U
 ```
 sudo apt-get install pcscd libusb-dev libpcsclite1 libpcsclite-dev dh-autoreconf
 npm install nfc-pcsc
 ```
 
-###GPIO
+### GPIO
 ```
 npm install mfrc522-rpi
 ```
